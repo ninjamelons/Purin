@@ -16,10 +16,9 @@ add_executable(main src/main.cpp src/utils/shader.cpp)
 target_link_libraries(main glfw glad ${CMAKE_DL_LIBS})
 
 add_custom_command(
-    TARGET main POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory              
-        ${CMAKE_SOURCE_DIR}/src/shaders $<TARGET_FILE_DIR:main>/shaders
-    COMMENT "Copying shaders" VERBATIM
+    TARGET main PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/src/shaders $<TARGET_FILE_DIR:main>/shaders
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/src/resources $<TARGET_FILE_DIR:main>/resources
 )
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})

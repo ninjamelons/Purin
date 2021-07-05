@@ -84,6 +84,8 @@ int main() {
     Shader shader("./shaders/vertex/vertex.vert", "./shaders/fragment/fragment.frag");
     shader.use();
 
+    shader.setFloat("offset", 0.25f);
+
     unsigned int VAO = getVAO(shader.getID(), sizeof(vertices), vertices, sizeof(indices), indices);
 
     while(!glfwWindowShouldClose(window))
