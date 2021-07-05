@@ -26,6 +26,7 @@ public:
     void setFloat(const std::string &name, float value);
 private:
     std::string read_shader_file (const char *shader_file);
+    void checkCompileErrors(unsigned int shader, std::string type);
 };
 
 #endif

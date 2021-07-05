@@ -9,14 +9,7 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
     unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
     glCompileShader(vertexShader);
-
-    int  success_vert;
-    char infoLog_vert[512];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success_vert);
-    if(!success_vert) {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog_vert);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog_vert << std::endl;
-    }
+    checkCompileErrors(vertexShader, "VERTEX");
 
     // Create and compile fragment shader
     shader_source = read_shader_file("./shaders/fragment/fragment.frag");
@@ -25,14 +18,7 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
     unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
     glCompileShader(fragmentShader);
-
-    int  success_frag;
-    char infoLog_frag[512];
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success_frag);
-    if(!success_frag) {
-        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog_frag);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog_frag << std::endl;
-    }
+    checkCompileErrors(fragmentShader, "FRAGMENT");
 
     // Create shader program and link shaders
     ID = glCreateProgram();
@@ -40,14 +26,7 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
     glAttachShader(ID, vertexShader);
     glAttachShader(ID, fragmentShader);
     glLinkProgram(ID);
-
-    int  success_prog;
-    char infoLog_prog[512];
-    glGetProgramiv(ID, GL_COMPILE_STATUS, &success_prog);
-    if(!success_prog) {
-        glGetProgramInfoLog(ID, 512, NULL, infoLog_prog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog_prog << std::endl;
-    }
+    checkCompileErrors(ID, "PROGRAM");
 
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
@@ -97,4 +76,28 @@ std::string Shader::read_shader_file (const char *shader_file)
     file.close();
 
     return sstr.str();
+}
+
+void Shader::checkCompileErrors(unsigned int shader, std::string type)
+{
+    int success;
+    char infoLog[1024];
+    if (type != "PROGRAM")
+    {
+        glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+        if (!success)
+        {
+            glGetShaderInfoLog(shader, 1024, NULL, infoLog);
+            std::cout << "ERROR::SHADER_COMPILATION_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
+        }
+    }
+    else
+    {
+        glGetProgramiv(shader, GL_LINK_STATUS, &success);
+        if (!success)
+        {
+            glGetProgramInfoLog(shader, 1024, NULL, infoLog);
+            std::cout << "ERROR::PROGRAM_LINKING_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
+        }
+    }
 }
