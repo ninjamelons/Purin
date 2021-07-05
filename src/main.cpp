@@ -17,26 +17,7 @@ void processInput(GLFWwindow *window);
 unsigned int getShaderProgram();
 unsigned int getVAO(unsigned int, unsigned long size, float vertices[], unsigned long size_i, unsigned int indices[]);
 
-std::string read_shader_file (const char *shader_file)
-{
-    std::ifstream file (shader_file);
-    if (!file) return std::string ();
-
-    file.ignore(std::numeric_limits<std::streamsize>::max());
-    auto size = file.gcount();
-
-    if (size > 0x10000) // 64KiB sanity check for shaders:
-        return std::string ();
-
-    file.clear();
-    file.seekg(0, std::ios_base::beg);
-
-    std::stringstream sstr;
-    sstr << file.rdbuf();
-    file.close();
-
-    return sstr.str();
-}
+float mixValue = 0.2f;
 
 int main() {
     glfwInit();
@@ -150,15 +131,7 @@ int main() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        const unsigned int uniLocation = glGetUniformLocation(shader.getID(), "mixInterpolate");
-        float *uniValue;
-
-        glGetUniformfv(shader.getID(), uniLocation, uniValue);
-
-        if(glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-            shader.setFloat("mixInterpolate", (*uniValue + 0.01f));
-        if(glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-            shader.setFloat("mixInterpolate", (*uniValue - 0.01f));
+        shader.setFloat("mixInterpolate", mixValue);
 
         // Activate texture location 0 - Bind calls will use this location
         glActiveTexture(GL_TEXTURE0);
@@ -224,4 +197,8 @@ void processInput(GLFWwindow *window)
 {
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+    else if(glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+        mixValue += 0.01f;
+    else if(glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+        mixValue -= 0.01f;
 }
