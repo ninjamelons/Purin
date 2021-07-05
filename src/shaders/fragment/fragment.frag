@@ -1,13 +1,18 @@
 #version 400 core
 out vec4 FragColor;
 
-in vec3 vertexColor; // the input variable from the vertex shader (same name and same type)
-in vec3 vertexPosition;
+in vec3 vertexColor;
+in vec2 TexCoord;
 
-//uniform vec4 globalColor; // Global across all shaders
+uniform sampler2D texture1;
+uniform sampler2D texture2;
+
+uniform float mixInterpolate;
 
 void main()
 {
-    FragColor = vec4(vertexColor, 1.0);
-    //FragColor = vec4(vertexPosition, 1.0);
+    FragColor = mix(texture(texture1, TexCoord)
+        ,texture(texture2, vec2(-TexCoord.x, TexCoord.y))
+        , mixInterpolate)
+        * vec4(vertexColor, 1.0);
 }

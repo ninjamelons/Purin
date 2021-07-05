@@ -1,3 +1,5 @@
+#define STB_IMAGE_IMPLEMENTATION
+#include "utils/stb_image.h"
 #include "utils/shader.h"
 
 #include "glad/glad.h"
@@ -67,12 +69,18 @@ int main() {
     glClear(GL_COLOR_BUFFER_BIT);
 
     float vertices[] = {
-        0.0f,  0.5f, 0.0f, 1.0f, 1.0f, 0.0f,
-        0.25f, 0.0, 0.0f, 1.0f, 0.0f, 0.0f,
-        -0.25f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-        0.5f,  -0.5f, 0.0f, 1.0f, 0.0f, 1.0f,
-        0.0f,  -0.5f, 0.0f, 0.0f, 0.0f, 1.0f,
-        -0.5f,  -0.5f, 0.0f, 0.0f, 1.0f, 1.0f,
+        // Position          // Colour          //Texture
+        0.0f,   0.5f, 0.0f,  1.0f, 1.0f, 0.0f,  0.5f,  1.0f,
+        0.25f,  0.0,  0.0f,  1.0f, 0.0f, 0.0f,  0.75f, 0.5f,
+        -0.25f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f,  0.25f, 0.5f,
+        0.5f,  -0.5f, 0.0f,  1.0f, 0.0f, 1.0f,  1.0f,  0.0f,
+        0.0f,  -0.5f, 0.0f,  0.0f, 0.0f, 1.0f,  0.5f,  0.0f,
+        -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 1.0f,  0.0f,  0.0f,
+    };
+    float texCoords[] = {
+        0.0f, 0.0f,  // lower-left corner  
+        1.0f, 0.0f,  // lower-right corner
+        0.5f, 1.0f   // top-center corner
     };
     unsigned int indices[] = {  // note that we start from 0!
         0, 1, 2,   // first triangle
@@ -83,8 +91,55 @@ int main() {
 
     Shader shader("./shaders/vertex/vertex.vert", "./shaders/fragment/fragment.frag");
     shader.use();
-
     shader.setFloat("offset", 0.25f);
+
+
+    // Set texture wrapping for x and y
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+
+    // Set texture scaling for shrinking and enlarging
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // OR GL_LINEAR for a more blurry effect
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    // Set texture interpolation between mipmap levels
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+    unsigned int texture, texture2;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    stbi_set_flip_vertically_on_load(true);
+
+    int width, height, nrChannels;
+    unsigned char *data = stbi_load("./resources/textures/container.jpg", &width, &height, &nrChannels, 0);
+    if(data) {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    } else {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(data);
+
+    glGenTextures(1, &texture2);
+    glBindTexture(GL_TEXTURE_2D, texture2);
+
+    data = stbi_load("./resources/textures/awesomeface.png", &width, &height, &nrChannels, 0);
+    if (data)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    } else {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(data);
+
+    shader.setInt("texture1", 0);
+    shader.setInt("texture2", 1);
+
+    shader.setFloat("mixInterpolate", 0.5f);
+
 
     unsigned int VAO = getVAO(shader.getID(), sizeof(vertices), vertices, sizeof(indices), indices);
 
@@ -94,6 +149,23 @@ int main() {
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+
+        const unsigned int uniLocation = glGetUniformLocation(shader.getID(), "mixInterpolate");
+        float *uniValue;
+
+        glGetUniformfv(shader.getID(), uniLocation, uniValue);
+
+        if(glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+            shader.setFloat("mixInterpolate", (*uniValue + 0.01f));
+        if(glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+            shader.setFloat("mixInterpolate", (*uniValue - 0.01f));
+
+        // Activate texture location 0 - Bind calls will use this location
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture);
+
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, texture2);
 
         glBindVertexArray(VAO);
         //glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -126,12 +198,16 @@ unsigned int getVAO(unsigned int shaderProgram, unsigned long size_v, float vert
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, size_i, indices, GL_STATIC_DRAW);
 
     // Location 0 - vertice position, 3 values, 0 offset, first float values
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    // Location 1 - Vertice color value, 3 values, offset by 3 (position values) floats, ending at 6 float memory
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3* sizeof(float)));
+    // Location 1 - Vertice color value, 3 values, offset by 3 (position value) floats, ending at 6 float memory
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3* sizeof(float)));
     glEnableVertexAttribArray(1);
+
+    // Location 2 - Vertice texture coord, 2 values, offset by 6 (position value) floats, ending at 8 float memory
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6* sizeof(float)));
+    glEnableVertexAttribArray(2);
 
     // uncomment this call to draw in wireframe polygons.
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);

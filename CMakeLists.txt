@@ -15,8 +15,12 @@ link_directories(/usr/lib ./lib)
 add_executable(main src/main.cpp src/utils/shader.cpp)
 target_link_libraries(main glfw glad ${CMAKE_DL_LIBS})
 
+add_custom_target(
+  compile_resources ALL
+  DEPENDS main
+)
 add_custom_command(
-    TARGET main PRE_BUILD
+    TARGET compile_resources PRE_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/src/shaders $<TARGET_FILE_DIR:main>/shaders
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/src/resources $<TARGET_FILE_DIR:main>/resources
 )
