@@ -189,33 +189,20 @@ int main() {
 
         glBindVertexArray(VAO);
 
-        // Camera "Object" - Gram-Schmidt orientation process
-        glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-        // Look at target (origin)
-        glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-        glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
-        // Get camera right - (not just x axis, but camera at any dynamic point)
-        glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f); 
-        glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
-        // Get camera up
-        glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
-
-        // OR JUST USE THIS FEKIN FUNCTION XD
-        // Transform to camera space
-        glm::mat4 cameraView = glm::lookAt(
-            glm::vec3(0.0f, 0.0f, 3.0f), 
-            glm::vec3(0.0f, 0.0f, 0.0f), 
-            glm::vec3(0.0f, 1.0f, 0.0f));
-
         // Projection matrix - transform to clip space
         glm::mat4 projection;
         projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
         shader.setMat4("projection", projection);
 
-        // View matrix - transform to view space
-        glm::mat4 view = glm::mat4(1.0f);
-        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -5.0f));
-        view = glm::rotate(view, (float)glfwGetTime() * glm::radians(25.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        // View matrix / Camera view (Same thing)
+        const float radius = 10.0f;
+        float camX = sin(glfwGetTime()) * radius;
+        float camZ = cos(glfwGetTime()) * radius;
+        glm::mat4 view = glm::lookAt(
+            glm::vec3(camX, 0.0, camZ),
+            glm::vec3(0.0, 0.0, 0.0),
+            glm::vec3(0.0, 1.0, 0.0));
+        
         shader.setMat4("view", view);
 
         // Model matrix - transform to world space
