@@ -21,7 +21,16 @@ void processInput(GLFWwindow *window);
 unsigned int getShaderProgram();
 unsigned int getVAO(unsigned int, unsigned long size, float vertices[]);
 
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+
 float mixValue = 0.2f;
+
+bool firstMouse = true;
+float lastX = 400, lastY = 300;
+float yaw = -90.0f;
+float pitch = 0.0f;
+float fov = 45.0f;
 
 glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f,  3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
@@ -175,6 +184,9 @@ int main() {
 
     // Enable depth rendering
     glEnable(GL_DEPTH_TEST);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetScrollCallback(window, scroll_callback);
 
     while(!glfwWindowShouldClose(window))
     {
@@ -202,7 +214,7 @@ int main() {
 
         // Projection matrix - transform to clip space
         glm::mat4 projection;
-        projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+        projection = glm::perspective(glm::radians(fov), 800.0f / 600.0f, 0.1f, 100.0f);
         shader.setMat4("projection", projection);
 
         // View matrix / Camera view (Same thing)
@@ -289,4 +301,42 @@ void processInput(GLFWwindow *window)
         cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
     else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+}
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos; // reversed since y-coordinates range from bottom to top
+
+    if(firstMouse) {
+        lastX = xpos;
+        lastY = ypos;
+    }
+
+    const float sensitivity = 0.1f;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+
+    yaw = glm::mod( yaw + xoffset, 360.0f ); // Limit to 360 to not wrap around too high
+    pitch += yoffset;
+
+    if(pitch > 89.0f)
+        pitch =  89.0f;
+    if(pitch < -89.0f)
+        pitch = -89.0f;
+    
+    glm::vec3 direction;
+    direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    direction.y = sin(glm::radians(pitch));
+    direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+    cameraFront = glm::normalize(direction);
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    fov -= (float)yoffset;
+    if (fov < 1.0f)
+        fov = 1.0f;
+    if (fov > 100.0f)
+        fov = 100.0f; 
 }
