@@ -19,7 +19,7 @@
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 unsigned int getShaderProgram();
-unsigned int getVAO(unsigned int, unsigned long size, float vertices[], unsigned long size_i, unsigned int indices[]);
+unsigned int getVAO(unsigned int, unsigned long size, float vertices[]);
 
 float mixValue = 0.2f;
 
@@ -54,30 +54,65 @@ int main() {
     glClear(GL_COLOR_BUFFER_BIT);
 
     float vertices[] = {
-        // Position          // Colour          //Texture
-        0.0f,   0.5f, 0.0f,  1.0f, 1.0f, 0.0f,  0.5f,  1.0f,
-        0.25f,  0.0,  0.0f,  1.0f, 0.0f, 0.0f,  0.75f, 0.5f,
-        -0.25f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f,  0.25f, 0.5f,
-        0.5f,  -0.5f, 0.0f,  1.0f, 0.0f, 1.0f,  1.0f,  0.0f,
-        0.0f,  -0.5f, 0.0f,  0.0f, 0.0f, 1.0f,  0.5f,  0.0f,
-        -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f,  0.0f, 0.0f,
+        0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  1.0f, 0.0f,
+        0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  1.0f, 1.0f,
+        0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 1.0f,  1.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 0.0f, 1.0f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f,  0.0f, 0.0f,
+
+        -0.5f, -0.5f,  0.5f,  1.0f, 1.0f, 0.0f,  0.0f, 0.0f,
+        0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,  1.0f, 0.0f,
+        0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  1.0f, 1.0f,
+        0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f,  1.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 1.0f,  0.0f, 0.0f,
+
+        -0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,  1.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  1.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 1.0f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  0.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 1.0f,  1.0f, 0.0f,
+
+        0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,  1.0f, 0.0f,
+        0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  1.0f, 1.0f,
+        0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  0.0f, 1.0f,
+        0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 1.0f,  0.0f, 1.0f,
+        0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  0.0f, 0.0f,
+        0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 1.0f,  1.0f, 0.0f,
+
+        -0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f,  0.0f, 1.0f,
+        0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  1.0f, 1.0f,
+        0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  1.0f, 0.0f,
+        0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 1.0f,  1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f,  0.0f, 1.0f,
+
+        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,  0.0f, 1.0f,
+        0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  1.0f, 1.0f,
+        0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  1.0f, 0.0f,
+        0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f,  1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 1.0f,  0.0f, 1.0f,
     };
-    float texCoords[] = {
-        0.0f, 0.0f,  // lower-left corner  
-        1.0f, 0.0f,  // lower-right corner
-        0.5f, 1.0f   // top-center corner
+
+    glm::vec3 cubePositions[] = {
+        glm::vec3( 0.0f,  0.0f,  0.0f),
+        glm::vec3( 2.0f,  5.0f, -15.0f),
+        glm::vec3(-1.5f, -2.2f, -2.5f),
+        glm::vec3(-3.8f, -2.0f, -12.3f),
+        glm::vec3( 2.4f, -0.4f, -3.5f),
+        glm::vec3(-1.7f,  3.0f, -7.5f),
+        glm::vec3( 1.3f, -2.0f, -2.5f),
+        glm::vec3( 1.5f,  2.0f, -2.5f),
+        glm::vec3( 1.5f,  0.2f, -1.5f),
+        glm::vec3(-1.3f,  1.0f, -1.5f)
     };
-    unsigned int indices[] = {  // note that we start from 0!
-        0, 1, 2,   // first triangle
-        2, 1, 4,   // second triangle
-        1, 3, 4,   // third
-        2, 4, 5
-    }; 
 
     Shader shader("./shaders/vertex/vertex.vert", "./shaders/fragment/fragment.frag");
     shader.use();
     shader.setFloat("offset", 0.25f);
-
 
     // Set texture wrapping for x and y
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
@@ -129,28 +164,21 @@ int main() {
 
     shader.setFloat("mixInterpolate", 0.5f);
 
-    unsigned int VAO = getVAO(shader.getID(), sizeof(vertices), vertices, sizeof(indices), indices);
+    unsigned int VAO = getVAO(shader.getID(), sizeof(vertices), vertices);
+
+    // Enable depth rendering
+    glEnable(GL_DEPTH_TEST);
 
     while(!glfwWindowShouldClose(window))
     {
         processInput(window);
 
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         shader.setFloat("mixInterpolate", mixValue);
-
-
-        // Matrix maths
-        glm::mat4 trans = glm::mat4(1.0f);
-        // Due to matrix multiplication, operations should be read in reverse
-        trans = glm::rotate(trans, glm::radians(90.0f), glm::vec3(0.0, 0.0, 1.0)); // This will rotate the translation matrix
-        trans = glm::translate(trans, glm::vec3(0.5f, 0.5f, 0.0f));
-        trans = glm::rotate(trans, (float)glfwGetTime()*2, glm::vec3(0.0f, 0.0f, 1.0f));
-        trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));
-
-        unsigned int transformLoc = glGetUniformLocation(shader.getID(), "transform");
-        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
 
         // Activate texture location 0 - Bind calls will use this location
         glActiveTexture(GL_TEXTURE0);
@@ -160,8 +188,46 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, texture2);
 
         glBindVertexArray(VAO);
-        //glDrawArrays(GL_TRIANGLES, 0, 3);
-        glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
+
+        // Camera "Object" - Gram-Schmidt orientation process
+        glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+        // Look at target (origin)
+        glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+        glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
+        // Get camera right - (not just x axis, but camera at any dynamic point)
+        glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f); 
+        glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
+        // Get camera up
+        glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
+
+        // OR JUST USE THIS FEKIN FUNCTION XD
+        // Transform to camera space
+        glm::mat4 cameraView = glm::lookAt(
+            glm::vec3(0.0f, 0.0f, 3.0f), 
+            glm::vec3(0.0f, 0.0f, 0.0f), 
+            glm::vec3(0.0f, 1.0f, 0.0f));
+
+        // Projection matrix - transform to clip space
+        glm::mat4 projection;
+        projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+        shader.setMat4("projection", projection);
+
+        // View matrix - transform to view space
+        glm::mat4 view = glm::mat4(1.0f);
+        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+        view = glm::rotate(view, (float)glfwGetTime() * glm::radians(10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        shader.setMat4("view", view);
+
+        // Model matrix - transform to world space
+        for (size_t i = 0; i < 10; i++)
+        {
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, cubePositions[i]);
+            model = glm::rotate(model, (float)glfwGetTime() * glm::radians(25.0f + 5.0f*i), glm::normalize(glm::vec3(1.0f, 0.25f, 0.1f)));
+            shader.setMat4("model", model);
+
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -171,7 +237,7 @@ int main() {
     return 0;
 }
 
-unsigned int getVAO(unsigned int shaderProgram, unsigned long size_v, float vertices[], unsigned long size_i, unsigned int indices[])
+unsigned int getVAO(unsigned int shaderProgram, unsigned long size_v, float vertices[])
 {
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
@@ -185,9 +251,6 @@ unsigned int getVAO(unsigned int shaderProgram, unsigned long size_v, float vert
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, size_v, vertices, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, size_i, indices, GL_STATIC_DRAW);
 
     // Location 0 - vertice position, 3 values, 0 offset, first float values
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);

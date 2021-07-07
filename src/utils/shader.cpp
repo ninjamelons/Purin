@@ -54,7 +54,13 @@ void Shader::setInt(const std::string &name, int value)
 
 void Shader::setFloat(const std::string &name, float value)
 {
-    glUniform1f(glGetUniformLocation(ID, name.c_str()), value); 
+    glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
+}
+
+void Shader::setMat4(const std::string &name, glm::mat4 value)
+{
+    int matID = glGetUniformLocation(ID, name.c_str());
+    glUniformMatrix4fv(matID, 1, GL_FALSE, glm::value_ptr(value));
 }
 
 std::string Shader::read_shader_file (const char *shader_file)
