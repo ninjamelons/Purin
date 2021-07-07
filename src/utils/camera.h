@@ -22,10 +22,11 @@ const float YAW         = -90.0f;
 const float PITCH       =  0.0f;
 const float SPEED       =  2.5f;
 const float SENSITIVITY =  0.1f;
-const float ZOOM        =  45.0f;
+const float FOV        =  45.0f;
 
 class Camera
 {
+public:
     // camera Attributes
     glm::vec3 Position;
     glm::vec3 Front;
@@ -38,7 +39,7 @@ class Camera
     // camera options
     float MovementSpeed;
     float MouseSensitivity;
-    float Zoom;
+    float Fov;
 
     // constructor with vectors
     Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f),
@@ -47,7 +48,7 @@ class Camera
         : Front(glm::vec3(0.0f, 0.0f, -1.0f)),
             MovementSpeed(SPEED),
             MouseSensitivity(SENSITIVITY),
-            Zoom(ZOOM)
+            Fov(FOV)
     {
         Position = position;
         WorldUp = up;
@@ -61,7 +62,7 @@ class Camera
         : Front(glm::vec3(0.0f, 0.0f, -1.0f)),
         MovementSpeed(SPEED),
         MouseSensitivity(SENSITIVITY),
-        Zoom(ZOOM)
+        Fov(FOV)
     {
         Position = glm::vec3(posX, posY, posZ);
         WorldUp = glm::vec3(upX, upY, upZ);
@@ -119,13 +120,12 @@ class Camera
     // processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
     void ProcessMouseScroll(float yoffset)
     {
-        Zoom -= (float)yoffset;
-        if (Zoom < 1.0f)
-            Zoom = 1.0f;
-        if (Zoom > 45.0f)
-            Zoom = 45.0f; 
+        Fov -= (float)yoffset;
+        if (Fov < 1.0f)
+            Fov = 1.0f;
+        if (Fov > 45.0f)
+            Fov = 45.0f; 
     }
-
 private:
     // calculates the front vector from the Camera's (updated) Euler Angles
     void updateCameraVectors()
