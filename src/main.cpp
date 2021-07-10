@@ -2,6 +2,7 @@
 #include "utils/stb_image.h"
 #include "utils/shader.h"
 #include "utils/camera.h"
+#include "utils/physics.h"
 
 #include "glad/glad.h"
 #include <GLFW/glfw3.h>
@@ -121,6 +122,37 @@ int main() {
         glm::vec3( 1.5f,  0.2f, -1.5f),
         glm::vec3(-1.3f,  1.0f, -1.5f)
     };
+
+    // Add Bullet object
+    Physics physics;
+
+    {
+		btCollisionShape* box = new btBoxShape(btVector3(
+            btScalar(50.),
+            btScalar(50.),
+            btScalar(50.)));
+
+		btTransform groundTransform;
+		groundTransform.setIdentity();
+		groundTransform.setOrigin(btVector3(0, -56, 0));
+
+		btScalar mass(0.);
+
+		//rigidbody is dynamic if and only if mass is non zero, otherwise static
+		bool isDynamic = (mass != 0.f);
+
+		btVector3 localInertia(0, 0, 0);
+		if (isDynamic)
+			box->calculateLocalInertia(mass, localInertia);
+
+		//using motionstate is optional, it provides interpolation capabilities, and only synchronizes 'active' objects
+		btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
+		btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, box, localInertia);
+		btRigidBody* body = new btRigidBody(rbInfo);
+
+		//add the body to the dynamics world
+		physics.dynamicsWorld->addRigidBody(body);
+    }
 
     Shader shader("./shaders/vertex/vertex.vert", "./shaders/fragment/fragment.frag");
     shader.use();
