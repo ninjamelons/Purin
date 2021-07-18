@@ -17,7 +17,7 @@
 class Shader
 {
 private:
-    unsigned int ID;
+    unsigned int _ID;
 public:
     unsigned int getID();
     // constructor reads and builds the shader

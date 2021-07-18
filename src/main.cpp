@@ -151,10 +151,10 @@ int main() {
 		btRigidBody* body = new btRigidBody(rbInfo);
 
 		//add the body to the dynamics world
-		physics.dynamicsWorld->addRigidBody(body);
+		physics._dynamicsWorld->addRigidBody(body);
     }
 
-    Shader shader("./shaders/vertex/vertex.vert", "./shaders/fragment/fragment.frag");
+    Shader shader("./resources/shaders/vertex.vert", "./resources/shaders/fragment.frag");
     shader.use();
     shader.setFloat("offset", 0.25f);
 

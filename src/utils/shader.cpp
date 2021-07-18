@@ -12,7 +12,7 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
     checkCompileErrors(vertexShader, "VERTEX");
 
     // Create and compile fragment shader
-    shader_source = read_shader_file("./shaders/fragment/fragment.frag");
+    shader_source = read_shader_file(fragmentPath);
     const char *fragmentShaderSource = shader_source.c_str();
 
     unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -21,12 +21,12 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
     checkCompileErrors(fragmentShader, "FRAGMENT");
 
     // Create shader program and link shaders
-    ID = glCreateProgram();
+    _ID = glCreateProgram();
 
-    glAttachShader(ID, vertexShader);
-    glAttachShader(ID, fragmentShader);
-    glLinkProgram(ID);
-    checkCompileErrors(ID, "PROGRAM");
+    glAttachShader(_ID, vertexShader);
+    glAttachShader(_ID, fragmentShader);
+    glLinkProgram(_ID);
+    checkCompileErrors(_ID, "PROGRAM");
 
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
@@ -34,32 +34,32 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
 
 unsigned int Shader::getID()
 {
-    return ID;
+    return _ID;
 }
 
 void Shader::use()
 {
-    glUseProgram(ID);
+    glUseProgram(_ID);
 }
 
 void Shader::setBool(const std::string &name, bool value)
 {
-    glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value); 
+    glUniform1i(glGetUniformLocation(_ID, name.c_str()), (int)value); 
 }
 
 void Shader::setInt(const std::string &name, int value)
 {
-    glUniform1i(glGetUniformLocation(ID, name.c_str()), value); 
+    glUniform1i(glGetUniformLocation(_ID, name.c_str()), value); 
 }
 
 void Shader::setFloat(const std::string &name, float value)
 {
-    glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
+    glUniform1f(glGetUniformLocation(_ID, name.c_str()), value);
 }
 
 void Shader::setMat4(const std::string &name, glm::mat4 value)
 {
-    int matID = glGetUniformLocation(ID, name.c_str());
+    int matID = glGetUniformLocation(_ID, name.c_str());
     glUniformMatrix4fv(matID, 1, GL_FALSE, glm::value_ptr(value));
 }
 
