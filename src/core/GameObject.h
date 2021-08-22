@@ -51,7 +51,7 @@ public:
 Transform GameObject::getWorldTransform()
 {
     if(_isDirty)
-        _worldTransform = _worldTransform * _Parent->_worldTransform;
+        _worldTransform = _Parent->_worldTransform * _worldTransform;
         _isDirty = false;
     return _worldTransform;
 }

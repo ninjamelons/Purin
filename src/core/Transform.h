@@ -19,7 +19,7 @@ public:
     glm::vec4 _perspective;
 
     Transform() :
-        _scale(0.0),
+        _scale(1.0f),
         _orientation(1.0f, 0.0f, 0.0f, 0.0f),
         _translation(0.0f, 0.0f, 0.0f) {}
     Transform(const Transform& t) :
@@ -44,7 +44,7 @@ public:
     
     ~Transform(){}
 
-    Transform operator*(const Transform& parent)
+    Transform operator*(const Transform& t2)
     {
         Transform t1(*this);
         glm::mat4 translate = glm::translate(glm::mat4(1.0), _translation);
@@ -53,7 +53,7 @@ public:
 
         _localTransform = translate * rotate * scale;
 
-        t1._worldTransform = parent._worldTransform * _localTransform;
+        t1._worldTransform = _localTransform * t2._worldTransform;
 
         return t1;
     }
