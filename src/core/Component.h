@@ -6,6 +6,7 @@ class Component
 protected:
     Component(){}
 public:
+    std::string _name;
     ~Component(){}
 };
 
