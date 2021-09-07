@@ -14,13 +14,29 @@ include_directories(
   /usr/include/bullet/
 )
 
-
 add_library(glad ${PROJECT_SOURCE_DIR}/lib/glad.c)
+add_library(imgui_backend
+  ${PROJECT_SOURCE_DIR}/lib/imgui_impl_opengl3.cpp
+  ${PROJECT_SOURCE_DIR}/lib/imgui_impl_glfw.cpp
+)
 
+add_library(purinCore 
+  src/core/Scene.cpp
+  src/core/Quaternion.cpp
+  src/core/GameObject.cpp
+  src/core/Transform.cpp
+  src/core/Renderer.cpp
+  src/core/Mesh.cpp
+)
 
 link_directories(/usr/lib ./lib)
 add_executable(main src/main.cpp src/utils/shader.cpp)
-target_link_libraries(main glfw glad LinearMath BulletCollision BulletDynamics ${CMAKE_DL_LIBS})
+target_link_libraries(main
+  glfw glad imgui imgui_backend
+  LinearMath BulletCollision BulletDynamics
+  purinCore
+  ${CMAKE_DL_LIBS}
+)
 
 add_custom_target(
   compile_resources ALL

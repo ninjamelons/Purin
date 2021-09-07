@@ -6,7 +6,7 @@
 #include <glm/glm.hpp>
 #include <vector>
 
-class RigidBody : Component
+class RigidBody : public Component
 {
 public:
     RigidBody(){}

@@ -13,13 +13,9 @@ public:
 
     glm::vec3 getEuler();
 
-    Quaternion(){}
-    ~Quaternion(){}
+    Quaternion();
+    ~Quaternion();
 };
-
-glm::vec3 Quaternion::getEuler() {
-
-}
 
 
 #endif

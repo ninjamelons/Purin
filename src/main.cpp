@@ -4,6 +4,14 @@
 #include "utils/camera.h"
 #include "utils/physics.h"
 
+#include "core/GameObject.h"
+#include "core/Mesh.h"
+#include "core/RigidBody.h"
+
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+
 #include "glad/glad.h"
 #include <GLFW/glfw3.h>
 
@@ -29,7 +37,7 @@ unsigned int getVAO(unsigned int, unsigned long size, float vertices[]);
 
 float mixValue = 0.2f;
 
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+Camera camera(glm::vec3(0.0f, 0.0f, 5.0f));
 bool firstMouse = true;
 float lastX = 400, lastY = 300;
 
@@ -38,14 +46,15 @@ float lastFrame = 0.0f;
 
 int main() {
     glfwInit();
+    // GL 3.2 + GLSL 150
+    const char* glsl_version = "#version 330";
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    #ifdef __APPLE__
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    #endif
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
+    int windowWidth = 1250;
+    int windowHeight = 900;
+
+    GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight, "LearnOpenGL", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -60,7 +69,22 @@ int main() {
         return -1;
     }
 
-    glViewport(0, 0, 800, 600);
+    // Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+    //ImGui::StyleColorsClassic();
+
+    // Setup Platform/Renderer backends
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init(glsl_version);
+
+    glViewport(0, 0, windowWidth, windowHeight);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     glClearColor(0.0f, 0.5f, 0.5f, 1.0f);
@@ -123,37 +147,6 @@ int main() {
         glm::vec3(-1.3f,  1.0f, -1.5f)
     };
 
-    // Add Bullet object
-    Physics physics;
-
-    {
-		btCollisionShape* box = new btBoxShape(btVector3(
-            btScalar(50.),
-            btScalar(50.),
-            btScalar(50.)));
-
-		btTransform groundTransform;
-		groundTransform.setIdentity();
-		groundTransform.setOrigin(btVector3(0, -56, 0));
-
-		btScalar mass(0.);
-
-		//rigidbody is dynamic if and only if mass is non zero, otherwise static
-		bool isDynamic = (mass != 0.f);
-
-		btVector3 localInertia(0, 0, 0);
-		if (isDynamic)
-			box->calculateLocalInertia(mass, localInertia);
-
-		//using motionstate is optional, it provides interpolation capabilities, and only synchronizes 'active' objects
-		btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
-		btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, box, localInertia);
-		btRigidBody* body = new btRigidBody(rbInfo);
-
-		//add the body to the dynamics world
-		physics._dynamicsWorld->addRigidBody(body);
-    }
-
     Shader shader("./resources/shaders/vertex.vert", "./resources/shaders/fragment.frag");
     shader.use();
     shader.setFloat("offset", 0.25f);
@@ -212,13 +205,73 @@ int main() {
 
     // Enable depth rendering
     glEnable(GL_DEPTH_TEST);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-    glfwSetCursorPosCallback(window, g_cursor_callback);
-    glfwSetScrollCallback(window, g_scroll_callback);
+    //glfwSetCursorPosCallback(window, g_cursor_callback);
+    //glfwSetScrollCallback(window, g_scroll_callback);
+
+    // Create first object
+    GameObject cube;
+    cube.setWorldTransform(Transform());
+    cube._relativeTransform = Transform();
+
+    std::shared_ptr<Component> cubeMesh = std::make_shared<Mesh>();
+    std::shared_ptr<Component> cubeRB = std::make_shared<RigidBody>();
+    cube.addComponent(cubeMesh);
+    cube.addComponent(cubeRB);
+
+    // Add Bullet object
+    /*
+    Physics physics;
+
+    {
+		btCollisionShape* box = new btBoxShape(btVector3(
+            btScalar(50.),
+            btScalar(50.),
+            btScalar(50.)));
+
+		btTransform groundTransform;
+		groundTransform.setIdentity();
+		groundTransform.setOrigin(btVector3(0, -56, 0));
+
+		btScalar mass(0.);
+
+		//rigidbody is dynamic if and only if mass is non zero, otherwise static
+		bool isDynamic = (mass != 0.f);
+
+		btVector3 localInertia(0, 0, 0);
+		if (isDynamic)
+			box->calculateLocalInertia(mass, localInertia);
+
+		//using motionstate is optional, it provides interpolation capabilities, and only synchronizes 'active' objects
+		btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
+		btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, box, localInertia);
+		btRigidBody* body = new btRigidBody(rbInfo);
+
+		//add the body to the dynamics world
+		physics._dynamicsWorld->addRigidBody(body);
+    }
+    */
+
+    char buf[256] = {};
+    float f = 0.0f;
 
     while(!glfwWindowShouldClose(window))
     {
+        ImGui_ImplGlfw_NewFrame();
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui::NewFrame();
+
+        ImGui::Begin("Test");
+        ImGui::Text("Hello, world %d", 123);
+        ImGui::InputText("string", buf, IM_ARRAYSIZE(buf));
+        ImGui::InputFloat("x", &cubePositions[0].x, 0.1f, 0.5f);
+        ImGui::InputFloat("y", &cubePositions[0].y, 0.1f, 0.5f);
+        ImGui::InputFloat("z", &cubePositions[0].z, 0.1f, 0.5f);
+        ImGui::End();
+
+        ImGui::Render();
+
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
@@ -243,7 +296,7 @@ int main() {
 
         // Projection matrix - transform to clip space
         glm::mat4 projection;
-        projection = glm::perspective(glm::radians(camera.Fov), 800.0f / 600.0f, 0.1f, 100.0f);
+        projection = glm::perspective(glm::radians(camera.Fov), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
         shader.setMat4("projection", projection);
 
         // View matrix / Camera view (Same thing)
@@ -261,9 +314,16 @@ int main() {
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
 
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+
+    // ImGui Cleanup
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 
     glfwTerminate();
     return 0;
