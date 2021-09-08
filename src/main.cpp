@@ -221,38 +221,15 @@ int main() {
     cube.addComponent(cubeRB);
 
     // Add Bullet object
-    /*
     Physics physics;
 
-    {
-		btCollisionShape* box = new btBoxShape(btVector3(
-            btScalar(50.),
-            btScalar(50.),
-            btScalar(50.)));
+    btScalar cubeMass(1.0f);
+    btVector3 cubeInertia(0.0f, 0.0f, 0.0f);
+    btVector3 cubeOrigin(btScalar(50.), btScalar(50.), btScalar(50.));
+    btCollisionShape* cubeShape = new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
 
-		btTransform groundTransform;
-		groundTransform.setIdentity();
-		groundTransform.setOrigin(btVector3(0, -56, 0));
-
-		btScalar mass(0.);
-
-		//rigidbody is dynamic if and only if mass is non zero, otherwise static
-		bool isDynamic = (mass != 0.f);
-
-		btVector3 localInertia(0, 0, 0);
-		if (isDynamic)
-			box->calculateLocalInertia(mass, localInertia);
-
-		//using motionstate is optional, it provides interpolation capabilities, and only synchronizes 'active' objects
-		btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
-		btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, box, localInertia);
-		btRigidBody* body = new btRigidBody(rbInfo);
-
-		//add the body to the dynamics world
-		physics._dynamicsWorld->addRigidBody(body);
-    }
-    */
-
+    physics.addRigidBody(cubeMass, cubeInertia, cubeOrigin, cubeShape);
+   
     char buf[256] = {};
     float f = 0.0f;
 
