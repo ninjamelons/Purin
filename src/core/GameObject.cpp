@@ -3,7 +3,7 @@
 Transform GameObject::getWorldTransform()
 {
     if(_isDirty)
-        _worldTransform = _Parent->_worldTransform * _worldTransform;
+        _worldTransform = _parent->_worldTransform * _worldTransform;
         _isDirty = false;
     return _worldTransform;
 }
@@ -17,61 +17,61 @@ void GameObject::setWorldTransform(const Transform& transform)
 // Child management
 void GameObject::addChild(std::shared_ptr<GameObject> child)
 {
-    auto inContainer = std::find_if(_Children.begin(), _Children.end(), 
+    auto inContainer = std::find_if(_children.begin(), _children.end(), 
         [child](std::shared_ptr<GameObject> const& i){ return i.get() == child.get(); });
     
-    if(inContainer == _Children.end())
+    if(inContainer == _children.end())
     {
-        _Children.push_back(child);
+        _children.push_back(child);
     } else {
         throw std::invalid_argument("Child already added");
     }
 }
 void GameObject::removeChild(std::string name)
 {
-    auto inContainer = std::remove_if(_Children.begin(), _Children.end(), 
+    auto inContainer = std::remove_if(_children.begin(), _children.end(), 
         [name](std::shared_ptr<GameObject> const& i){ return i->_name == name; });
     
-    if(inContainer == _Children.end())
+    if(inContainer == _children.end())
     {
         throw std::invalid_argument("Child not found");
     }
 }
 void GameObject::removeAllChildren()
 {
-    _Children.clear();
+    _children.clear();
 }
 
 // Component management
 void GameObject::addComponent(std::shared_ptr<Component> component)
 {
-    auto inContainer = std::find_if(_Components.begin(), _Components.end(), 
+    auto inContainer = std::find_if(_components.begin(), _components.end(), 
         [component](std::shared_ptr<Component> const& i){ return i.get() == component.get(); });
     
-    if(inContainer == _Components.end())
+    if(inContainer == _components.end())
     {
-        _Components.push_back(component);
+        _components.push_back(component);
     } else {
         throw std::invalid_argument("Component already added");
     }
 }
 void GameObject::removeComponent(std::string name)
 {
-    auto inContainer = std::remove_if(_Components.begin(), _Components.end(),
+    auto inContainer = std::remove_if(_components.begin(), _components.end(),
         [name](std::shared_ptr<Component> const& i){ return i->_name == name; });
     
-    if(inContainer == _Components.end())
+    if(inContainer == _components.end())
     {
         throw std::invalid_argument("Component not found");
     }
 }
 void GameObject::removeAllComponents()
 {
-    _Components.clear();
+    _components.clear();
 }
 
 // Constructors & Destructor
-GameObject::GameObject() : _Parent(nullptr), _isDirty(true) {}
+GameObject::GameObject() : _parent(nullptr), _isDirty(true) {}
 GameObject::GameObject(std::string name) : _name(name) {}
 GameObject::GameObject(Transform relativeTransform) : _relativeTransform(relativeTransform) {}
 GameObject::~GameObject() {}

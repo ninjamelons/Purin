@@ -9,8 +9,7 @@
 class Scene
 {
 public:
-    GameObject root;
-    std::vector<std::shared_ptr<GameObject>> gameObjects;
+    GameObject _root;
 
     Scene();
     ~Scene();

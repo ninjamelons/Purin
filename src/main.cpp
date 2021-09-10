@@ -4,6 +4,8 @@
 #include "utils/camera.h"
 #include "utils/physics.h"
 
+#include "core/Editor.h"
+#include "core/Scene.h"
 #include "core/GameObject.h"
 #include "core/Mesh.h"
 #include "core/RigidBody.h"
@@ -69,20 +71,8 @@ int main() {
         return -1;
     }
 
-    // Setup Dear ImGui context
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+    Editor editor(window, glsl_version);
 
-    // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
-    //ImGui::StyleColorsClassic();
-
-    // Setup Platform/Renderer backends
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init(glsl_version);
 
     glViewport(0, 0, windowWidth, windowHeight);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -205,20 +195,27 @@ int main() {
 
     // Enable depth rendering
     glEnable(GL_DEPTH_TEST);
+
+    // Lock cursor to window
     //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     //glfwSetCursorPosCallback(window, g_cursor_callback);
     //glfwSetScrollCallback(window, g_scroll_callback);
 
+    // Create Scene
+    Scene scene;
+
     // Create first object
-    GameObject cube;
-    cube.setWorldTransform(Transform());
-    cube._relativeTransform = Transform();
+    std::shared_ptr<GameObject> cube = std::make_shared<GameObject>();
+    cube->setWorldTransform(Transform());
+    cube->_relativeTransform = Transform();
 
     std::shared_ptr<Component> cubeMesh = std::make_shared<Mesh>();
     std::shared_ptr<Component> cubeRB = std::make_shared<RigidBody>();
-    cube.addComponent(cubeMesh);
-    cube.addComponent(cubeRB);
+    cube->addComponent(cubeMesh);
+    cube->addComponent(cubeRB);
+
+    scene._root.addChild(cube);
 
     // Add Bullet object
     Physics physics;
@@ -235,19 +232,7 @@ int main() {
 
     while(!glfwWindowShouldClose(window))
     {
-        ImGui_ImplGlfw_NewFrame();
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui::NewFrame();
-
-        ImGui::Begin("Test");
-        ImGui::Text("Hello, world %d", 123);
-        ImGui::InputText("string", buf, IM_ARRAYSIZE(buf));
-        ImGui::InputFloat("x", &cubePositions[0].x, 0.1f, 0.5f);
-        ImGui::InputFloat("y", &cubePositions[0].y, 0.1f, 0.5f);
-        ImGui::InputFloat("z", &cubePositions[0].z, 0.1f, 0.5f);
-        ImGui::End();
-
-        ImGui::Render();
+        physics._dynamicsWorld->stepSimulation(1.0f / 60.0f, 10);
 
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
@@ -291,16 +276,40 @@ int main() {
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
 
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        editor.DrawEditor([&]() {
+            ImGui::SetCurrentContext(editor.getImguiContext());
+            
+            //ImGui::ShowDemoWindow();
+
+            ImGui::Begin("Scene Hierarchy");
+
+            static ImGuiTreeNodeFlags base_flags =
+                ImGuiTreeNodeFlags_OpenOnArrow |
+                ImGuiTreeNodeFlags_OpenOnDoubleClick |
+                ImGuiTreeNodeFlags_SpanAvailWidth;
+            int node_clicked = -1;
+            ImGuiTreeNodeFlags node_flags = base_flags;
+            if (ImGui::TreeNodeEx("Scene", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                for (auto& child : scene._root._children)
+                {
+                    ImGui::Text("Text here");
+                }
+                ImGui::TreePop();
+            }
+            ImGui::End();
+
+            ImGui::Begin("Test");
+            ImGui::InputText("Name", buf, IM_ARRAYSIZE(buf));
+            ImGui::InputFloat("X", &cubePositions[0].x, 0.1f, 0.5f);
+            ImGui::InputFloat("Y", &cubePositions[0].y, 0.1f, 0.5f);
+            ImGui::InputFloat("Z", &cubePositions[0].z, 0.1f, 0.5f);
+            ImGui::End();
+        });
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-
-    // ImGui Cleanup
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
 
     glfwTerminate();
     return 0;

@@ -28,9 +28,9 @@ public:
     void setParent(std::shared_ptr<GameObject> parent);
 
     // Gameobject members
-    std::vector<std::shared_ptr<Component>> _Components;
-    std::vector<std::shared_ptr<GameObject>> _Children;
-    std::shared_ptr<GameObject> _Parent;
+    std::vector<std::shared_ptr<Component>> _components;
+    std::vector<std::shared_ptr<GameObject>> _children;
+    std::shared_ptr<GameObject> _parent;
 
     // Component management
     void addComponent(std::shared_ptr<Component> component);
