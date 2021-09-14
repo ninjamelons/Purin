@@ -1,6 +1,5 @@
 #include "Transform.h"
 
-
 Transform Transform::operator*(const Transform& t2)
 {
     Transform t1(*this);
@@ -16,7 +15,7 @@ Transform Transform::operator*(const Transform& t2)
 }
 
 Transform::Transform() :
-    _scale(1.0f),
+    _scale(glm::vec3(1.0f)),
     _orientation(1.0f, 0.0f, 0.0f, 0.0f),
     _translation(0.0f, 0.0f, 0.0f) {}
 Transform::Transform(const Transform& t) :

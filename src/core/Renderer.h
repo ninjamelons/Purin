@@ -2,12 +2,11 @@
 #define RENDERER
 
 #include "Component.h"
-#include "Transform.h"
 
 class Renderer : Component
 {
 public:
-    void render(Transform world);
+    void Render();
 
     Renderer(){}
     ~Renderer(){}

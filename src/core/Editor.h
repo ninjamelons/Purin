@@ -12,20 +12,23 @@
 class Editor
 {
 private:
-    ImGuiContext* _imguiContext;
+    ImGuiContext* _imguiContext = nullptr;
+    std::shared_ptr<GameObject> _selectedSceneNode = nullptr;
 public:
     Editor(GLFWwindow* window, const char* glsl_version);
     ~Editor();
 
     ImGuiContext* getImguiContext();
+    std::shared_ptr<GameObject> getSelectedSceneNode();
 
     template<typename D>
     void DrawEditor(D&& drawFunc);
-    void DrawSceneNode(std::shared_ptr<GameObject> node);
+    void DrawSceneNode(std::shared_ptr<GameObject> node, ImGuiTreeNodeFlags flags = 0);
     void DrawTransform(Transform& transform);
 };
 
 ImGuiContext* Editor::getImguiContext(){return _imguiContext;}
+std::shared_ptr<GameObject> Editor::getSelectedSceneNode(){return _selectedSceneNode;}
 
 template<typename D>
 void Editor::DrawEditor(D&& drawFunc)
@@ -34,19 +37,32 @@ void Editor::DrawEditor(D&& drawFunc)
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
+
+    ImGui::ShowDemoWindow();
+
     drawFunc();
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-void Editor::DrawSceneNode(std::shared_ptr<GameObject> node)
+void Editor::DrawSceneNode(std::shared_ptr<GameObject> node, ImGuiTreeNodeFlags flags)
 {
-    if(ImGui::TreeNode(node->_name.c_str()))
+    ImGuiTreeNodeFlags node_flags = flags;
+    if(_selectedSceneNode == node) {
+        node_flags |= ImGuiTreeNodeFlags_Selected;
+    }
+
+    if(ImGui::TreeNodeEx(node->_name.c_str(), node_flags))
     {
+        if(ImGui::IsItemClicked())
+        {
+            _selectedSceneNode = node;
+        }
+
         for(auto child : node->_children)
         {
-            DrawSceneNode(child);
+            DrawSceneNode(child, flags);
         }
         ImGui::TreePop();
     }
@@ -54,7 +70,46 @@ void Editor::DrawSceneNode(std::shared_ptr<GameObject> node)
 
 void Editor::DrawTransform(Transform& transform)
 {
-    
+    if(ImGui::BeginTable("Transform", 3))
+    {
+        ImGui::TableNextRow();
+        ImGui::AlignTextToFramePadding();
+        ImGui::TableSetColumnIndex(0);
+        ImGui::Text("Position");
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0);
+        ImGui::DragFloat("X", &transform._translation.x, 0.1f);
+        ImGui::TableSetColumnIndex(1);
+        ImGui::DragFloat("Y", &transform._translation.y, 0.1f);
+        ImGui::TableSetColumnIndex(2);
+        ImGui::DragFloat("Z", &transform._translation.z, 0.1f);
+
+        ImGui::TableNextRow();
+        ImGui::AlignTextToFramePadding();
+        ImGui::TableSetColumnIndex(0);
+        ImGui::Text("Orientation");
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0);
+        ImGui::DragFloat("X", &transform._orientation.x, 0.1f);
+        ImGui::TableSetColumnIndex(1);
+        ImGui::DragFloat("Y", &transform._orientation.y, 0.1f);
+        ImGui::TableSetColumnIndex(2);
+        ImGui::DragFloat("Z", &transform._orientation.z, 0.1f);
+
+        ImGui::TableNextRow();
+        ImGui::AlignTextToFramePadding();
+        ImGui::TableSetColumnIndex(0);
+        ImGui::Text("Scale");
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0);
+        ImGui::DragFloat("X", &transform._scale.x, 0.1f);
+        ImGui::TableSetColumnIndex(1);
+        ImGui::DragFloat("Y", &transform._scale.y, 0.1f);
+        ImGui::TableSetColumnIndex(2);
+        ImGui::DragFloat("Z", &transform._scale.z, 0.1f);
+
+        ImGui::EndTable();
+    }
 }
 
 Editor::Editor(GLFWwindow* window, const char* glsl_version)
@@ -63,8 +118,10 @@ Editor::Editor(GLFWwindow* window, const char* glsl_version)
     IMGUI_CHECKVERSION();
     _imguiContext = ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
+    //This wil break scroll for some reason, unclear why
+    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();

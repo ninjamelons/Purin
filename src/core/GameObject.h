@@ -17,7 +17,7 @@ class GameObject
 {
 private:
     Transform _worldTransform;
-    bool _isDirty;
+    bool _isDirty = true;
 public:
     std::string _name;
     Transform _relativeTransform;

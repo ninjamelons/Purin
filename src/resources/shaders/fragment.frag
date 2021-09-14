@@ -1,17 +1,11 @@
 #version 330 core
-
 out vec4 FragColor;
 
-in vec3 vertexColor;
-in vec2 TexCoord;
+in vec2 TexCoords;
 
-uniform sampler2D texture1;
-uniform sampler2D texture2;
-
-uniform float mixInterpolate;
+uniform sampler2D texture_diffuse1;
 
 void main()
-{
-    FragColor = texture(texture1, TexCoord) * vec4(vertexColor, 1.0);
-    FragColor += mixInterpolate * texture(texture2, TexCoord) * vec4(vertexColor, 1.0);
+{    
+    FragColor = texture(texture_diffuse1, TexCoords);
 }

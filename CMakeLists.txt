@@ -12,6 +12,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 include_directories(
   /usr/include/
   /usr/include/bullet/
+  ${CMAKE_SOURCE_DIR}/src/utils/
+  ${CMAKE_SOURCE_DIR}/src/core/
 )
 
 add_library(glad ${PROJECT_SOURCE_DIR}/lib/glad.c)
@@ -20,20 +22,23 @@ add_library(imgui_backend
   ${PROJECT_SOURCE_DIR}/lib/imgui_impl_glfw.cpp
 )
 
-add_library(purinCore 
+add_library(purinCore
   src/core/Scene.cpp
   src/core/Quaternion.cpp
   src/core/GameObject.cpp
   src/core/Transform.cpp
   src/core/Renderer.cpp
+  src/core/Shader.cpp
   src/core/Mesh.cpp
+  src/core/Model.cpp
 )
 
 link_directories(/usr/lib ./lib)
-add_executable(main src/main.cpp src/utils/shader.cpp)
+add_executable(main src/main.cpp)
 target_link_libraries(main
   glfw glad imgui imgui_backend
   LinearMath BulletCollision BulletDynamics
+  assimp
   purinCore
   ${CMAKE_DL_LIBS}
 )
@@ -43,8 +48,8 @@ add_custom_target(
   DEPENDS main
 )
 add_custom_command(
-    TARGET compile_resources PRE_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/src/resources $<TARGET_FILE_DIR:main>/resources
+  TARGET compile_resources PRE_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/src/resources $<TARGET_FILE_DIR:main>/resources
 )
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})

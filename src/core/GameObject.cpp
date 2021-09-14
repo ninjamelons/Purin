@@ -2,9 +2,13 @@
 
 Transform GameObject::getWorldTransform()
 {
+    /*
     if(_isDirty)
+    {
         _worldTransform = _parent->_worldTransform * _worldTransform;
         _isDirty = false;
+    }
+    */
     return _worldTransform;
 }
 
@@ -71,7 +75,7 @@ void GameObject::removeAllComponents()
 }
 
 // Constructors & Destructor
-GameObject::GameObject() : _parent(nullptr), _isDirty(true) {}
+GameObject::GameObject() : _parent(nullptr) {}
 GameObject::GameObject(std::string name) : _name(name) {}
 GameObject::GameObject(Transform relativeTransform) : _relativeTransform(relativeTransform) {}
 GameObject::~GameObject() {}

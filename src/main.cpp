@@ -1,14 +1,13 @@
-#define STB_IMAGE_IMPLEMENTATION
-#include "utils/stb_image.h"
-#include "utils/shader.h"
 #include "utils/camera.h"
 #include "utils/physics.h"
 
 #include "core/Editor.h"
+#include "core/Shader.h"
 #include "core/Scene.h"
 #include "core/GameObject.h"
-#include "core/Mesh.h"
 #include "core/RigidBody.h"
+#include "core/Mesh.h"
+#include "core/Model.h"
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -28,6 +27,9 @@
 #include <fstream>
 #include <iterator>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "utils/stb_image.h"
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 
@@ -35,7 +37,6 @@ void g_cursor_callback(GLFWwindow* window, double xpos, double ypos);
 void g_scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
 unsigned int getShaderProgram();
-unsigned int getVAO(unsigned int, unsigned long size, float vertices[]);
 
 float mixValue = 0.2f;
 
@@ -124,22 +125,8 @@ int main() {
         -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 1.0f,  0.0f, 1.0f,
     };
 
-    glm::vec3 cubePositions[] = {
-        glm::vec3( 0.0f,  0.0f,  0.0f),
-        glm::vec3( 2.0f,  5.0f, -15.0f),
-        glm::vec3(-1.5f, -2.2f, -2.5f),
-        glm::vec3(-3.8f, -2.0f, -12.3f),
-        glm::vec3( 2.4f, -0.4f, -3.5f),
-        glm::vec3(-1.7f,  3.0f, -7.5f),
-        glm::vec3( 1.3f, -2.0f, -2.5f),
-        glm::vec3( 1.5f,  2.0f, -2.5f),
-        glm::vec3( 1.5f,  0.2f, -1.5f),
-        glm::vec3(-1.3f,  1.0f, -1.5f)
-    };
-
     Shader shader("./resources/shaders/vertex.vert", "./resources/shaders/fragment.frag");
     shader.use();
-    shader.setFloat("offset", 0.25f);
 
     // Set texture wrapping for x and y
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
@@ -157,65 +144,43 @@ int main() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    unsigned int texture, texture2;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-
     stbi_set_flip_vertically_on_load(true);
-
-    int width, height, nrChannels;
-    unsigned char *data = stbi_load("./resources/textures/container.jpg", &width, &height, &nrChannels, 0);
-    if(data) {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    } else {
-        std::cout << "Failed to load texture" << std::endl;
-    }
-    stbi_image_free(data);
-
-    glGenTextures(1, &texture2);
-    glBindTexture(GL_TEXTURE_2D, texture2);
-
-    data = stbi_load("./resources/textures/awesomeface.png", &width, &height, &nrChannels, 0);
-    if (data)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    } else {
-        std::cout << "Failed to load texture" << std::endl;
-    }
-    stbi_image_free(data);
-
-    shader.setInt("texture1", 0);
-    shader.setInt("texture2", 1);
-
-    shader.setFloat("mixInterpolate", 0.5f);
-
-    unsigned int VAO = getVAO(shader.getID(), sizeof(vertices), vertices);
 
     // Enable depth rendering
     glEnable(GL_DEPTH_TEST);
-
-    // Lock cursor to window
-    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-    //glfwSetCursorPosCallback(window, g_cursor_callback);
-    //glfwSetScrollCallback(window, g_scroll_callback);
 
     // Create Scene
     Scene scene;
 
     // Create first object
-    std::shared_ptr<GameObject> cube = std::make_shared<GameObject>();
-    cube->setWorldTransform(Transform());
-    cube->_relativeTransform = Transform();
+    std::shared_ptr<GameObject> backpack = std::make_shared<GameObject>("First object");
+    std::shared_ptr<Component> backpackModel = std::make_shared<Model>("./resources/models/backpack/backpack.obj");
+    backpack->addComponent(backpackModel);
 
-    std::shared_ptr<Component> cubeMesh = std::make_shared<Mesh>();
-    std::shared_ptr<Component> cubeRB = std::make_shared<RigidBody>();
-    cube->addComponent(cubeMesh);
-    cube->addComponent(cubeRB);
+    scene._root.addChild(backpack);
 
-    scene._root.addChild(cube);
+    /*
+    // Create second object
+    std::shared_ptr<GameObject> cube2 = std::make_shared<GameObject>("Second object");
+    cube2->setWorldTransform(Transform());
+    cube2->_relativeTransform = Transform();
+
+    scene._root.addChild(cube2);
+
+    // Create third object
+    std::shared_ptr<GameObject> cube3 = std::make_shared<GameObject>("Third object");
+    cube3->setWorldTransform(Transform());
+    cube3->_relativeTransform = Transform();
+
+    scene._root.addChild(cube3);
+
+    // Create fourth object
+    std::shared_ptr<GameObject> cube4 = std::make_shared<GameObject>("Fourth object");
+    cube4->setWorldTransform(Transform());
+    cube4->_relativeTransform = Transform();
+
+    cube3->addChild(cube4);
+    */
 
     // Add Bullet object
     Physics physics;
@@ -245,17 +210,6 @@ int main() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        shader.setFloat("mixInterpolate", mixValue);
-
-        // Activate texture location 0 - Bind calls will use this location
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture);
-
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, texture2);
-
-        glBindVertexArray(VAO);
-
         // Projection matrix - transform to clip space
         glm::mat4 projection;
         projection = glm::perspective(glm::radians(camera.Fov), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
@@ -265,87 +219,48 @@ int main() {
         glm::mat4 view = glm::lookAt(camera.Position, camera.Position + camera.Front, camera.Up);
         shader.setMat4("view", view);
 
-        // Model matrix - transform to world space
-        for (size_t i = 0; i < 10; i++)
-        {
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, cubePositions[i]);
-            model = glm::rotate(model, (float)glfwGetTime() * glm::radians(25.0f + 5.0f*i), glm::normalize(glm::vec3(1.0f, 0.25f, 0.1f)));
-            shader.setMat4("model", model);
-
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
+        // Render backpack model
+        shader.setMat4("model", backpack->getWorldTransform()._worldTransform);
+        std::static_pointer_cast<Model>(backpackModel)->Draw(shader);
 
         editor.DrawEditor([&]() {
             ImGui::SetCurrentContext(editor.getImguiContext());
             
-            //ImGui::ShowDemoWindow();
-
             ImGui::Begin("Scene Hierarchy");
 
             static ImGuiTreeNodeFlags base_flags =
                 ImGuiTreeNodeFlags_OpenOnArrow |
                 ImGuiTreeNodeFlags_OpenOnDoubleClick |
                 ImGuiTreeNodeFlags_SpanAvailWidth;
-            int node_clicked = -1;
             ImGuiTreeNodeFlags node_flags = base_flags;
             if (ImGui::TreeNodeEx("Scene", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 for (auto& child : scene._root._children)
-                {
-                    ImGui::Text("Text here");
+                {                    
+                    editor.DrawSceneNode(child, node_flags);
                 }
                 ImGui::TreePop();
             }
             ImGui::End();
-
-            ImGui::Begin("Test");
-            ImGui::InputText("Name", buf, IM_ARRAYSIZE(buf));
-            ImGui::InputFloat("X", &cubePositions[0].x, 0.1f, 0.5f);
-            ImGui::InputFloat("Y", &cubePositions[0].y, 0.1f, 0.5f);
-            ImGui::InputFloat("Z", &cubePositions[0].z, 0.1f, 0.5f);
-            ImGui::End();
+            
+            if(editor.getSelectedSceneNode() != nullptr)
+            {
+                ImGui::SetNextWindowSize(ImVec2(150, 200), ImGuiCond_FirstUseEver);
+                ImGui::Begin("Transform");
+                ImGui::Text(editor.getSelectedSceneNode()->_name.c_str());
+                editor.DrawTransform(editor.getSelectedSceneNode()->_relativeTransform);
+                ImGui::End();
+            }
         });
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
+    delete cubeShape;
+
     glfwTerminate();
     return 0;
-}
-
-unsigned int getVAO(unsigned int shaderProgram, unsigned long size_v, float vertices[])
-{
-    // set up vertex data (and buffer(s)) and configure vertex attributes
-    // ------------------------------------------------------------------
-    unsigned int VBO, EBO, VAO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
-
-    // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, size_v, vertices, GL_STATIC_DRAW);
-
-    // Location 0 - vertice position, 3 values, 0 offset, first float values
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    // Location 1 - Vertice color value, 3 values, offset by 3 (position value) floats, ending at 6 float memory
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3* sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    // Location 2 - Vertice texture coord, 2 values, offset by 6 (position value) floats, ending at 8 float memory
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6* sizeof(float)));
-    glEnableVertexAttribArray(2);
-
-    // uncomment this call to draw in wireframe polygons.
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-    return VAO;
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -368,18 +283,33 @@ void processInput(GLFWwindow *window)
         camera.MovementSpeed = SPEED;
     }
 
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.ProcessKeyboard(FORWARD, deltaTime);
-    else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.ProcessKeyboard(BACKWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.ProcessKeyboard(LEFT, deltaTime);
-    else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.ProcessKeyboard(RIGHT, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-        camera.ProcessKeyboard(UP, deltaTime);
-    else if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-        camera.ProcessKeyboard(DOWN, deltaTime);
+    // Interact with scene if button is held down
+    if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS)
+    {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+        glfwSetCursorPosCallback(window, g_cursor_callback);
+        glfwSetScrollCallback(window, g_scroll_callback);
+
+
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+            camera.ProcessKeyboard(FORWARD, deltaTime);
+        else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+            camera.ProcessKeyboard(BACKWARD, deltaTime);
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+            camera.ProcessKeyboard(LEFT, deltaTime);
+        else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+            camera.ProcessKeyboard(RIGHT, deltaTime);
+        if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+            camera.ProcessKeyboard(UP, deltaTime);
+        else if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+            camera.ProcessKeyboard(DOWN, deltaTime);
+    } else {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+
+        glfwSetCursorPosCallback(window, NULL);
+        glfwSetScrollCallback(window, NULL);
+    }
 }
 
 void g_cursor_callback(GLFWwindow* window, double xpos, double ypos)
