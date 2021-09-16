@@ -1,25 +1,22 @@
 #include "Transform.h"
 
 glm::mat4 Transform::worldTransform() {
-    if(_isDirty) {
-        _localTransform = glm::mat4(1.0f);
-        _localTransform = glm::translate(_worldTransform, _translation.toVec3());
-        _localTransform *= glm::mat4_cast(_orientation);
-        _localTransform = glm::scale(_worldTransform, _scale);
+    auto local = localTransform();
 
-        _worldTransform = _localTransform; // Temporary - Need to multiply by parent transform
+    if(_isDirty) {
+        _worldTransform = local; // Temporary - Need to multiply by parent transform
         _isDirty = false;
     }
     return _worldTransform;
 }
 
 glm::mat4 Transform::localTransform() {
-    if(_isDirty) {
+    if(_isDirtyLocal) {
         _localTransform = glm::mat4(1.0f);
         _localTransform = glm::translate(_localTransform, _translation.toVec3());
         _localTransform *= glm::mat4_cast(_orientation);
         _localTransform = glm::scale(_localTransform, _scale);
-        _isDirty = false;
+        _isDirtyLocal = false;
     }
     return _localTransform;
 }
@@ -42,6 +39,7 @@ Transform Transform::operator+=(const Translation& trans)
 {
     _translation += trans;
     _isDirty = true;
+    _isDirtyLocal = true;
     return *this;
 }
 

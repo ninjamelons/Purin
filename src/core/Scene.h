@@ -9,13 +9,13 @@
 class Scene
 {
 public:
-    std::shared_ptr<GameObject> _root;
+    std::shared_ptr<GameObject> _root = std::make_shared<GameObject>();
 
     Scene();
     ~Scene();
 };
 
-Scene::Scene() : _root(std::make_shared<GameObject>()) {}
+Scene::Scene() {}
 Scene::~Scene() {}
 
 #endif
