@@ -302,8 +302,6 @@ void processInput(GLFWwindow *window)
     // Interact with scene if button is held down
     if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS)
     {
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
         glfwSetCursorPosCallback(window, g_cursor_callback);
         glfwSetScrollCallback(window, g_scroll_callback);
 
@@ -321,8 +319,6 @@ void processInput(GLFWwindow *window)
         else if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
             camera.ProcessKeyboard(DOWN, deltaTime);
     } else {
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-
         glfwSetCursorPosCallback(window, NULL);
         glfwSetScrollCallback(window, NULL);
     }

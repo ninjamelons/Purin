@@ -78,11 +78,14 @@ void Editor::DrawTransform(Transform& transform)
         ImGui::Text("Position");
         ImGui::TableNextRow();
         ImGui::TableSetColumnIndex(0);
-        ImGui::DragFloat("X", &transform._translation.x, 0.1f);
+        if(ImGui::DragFloat("X Pos", &transform._translation.x, 0.1f))
+            transform.setDirty();
         ImGui::TableSetColumnIndex(1);
-        ImGui::DragFloat("Y", &transform._translation.y, 0.1f);
+        if(ImGui::DragFloat("Y Pos", &transform._translation.y, 0.1f))
+            transform.setDirty();
         ImGui::TableSetColumnIndex(2);
-        ImGui::DragFloat("Z", &transform._translation.z, 0.1f);
+        if(ImGui::DragFloat("Z Pos", &transform._translation.z, 0.1f))
+            transform.setDirty();
 
         ImGui::TableNextRow();
         ImGui::AlignTextToFramePadding();
@@ -90,11 +93,16 @@ void Editor::DrawTransform(Transform& transform)
         ImGui::Text("Orientation");
         ImGui::TableNextRow();
         ImGui::TableSetColumnIndex(0);
-        ImGui::DragFloat("X", &transform._orientation.x, 0.1f);
+        
+        // TODO - NEEDS TO BE CONVERTED TO EULER ANGLES SOMEHOW (or dont what do I care)
+        if(ImGui::DragFloat("X Rot", &transform._orientation.x, 0.1f))
+            transform.setDirty();
         ImGui::TableSetColumnIndex(1);
-        ImGui::DragFloat("Y", &transform._orientation.y, 0.1f);
+        if(ImGui::DragFloat("Y Rot", &transform._orientation.y, 0.1f))
+            transform.setDirty();
         ImGui::TableSetColumnIndex(2);
-        ImGui::DragFloat("Z", &transform._orientation.z, 0.1f);
+        if(ImGui::DragFloat("Z Rot", &transform._orientation.z, 0.1f))
+            transform.setDirty();
 
         ImGui::TableNextRow();
         ImGui::AlignTextToFramePadding();
@@ -102,11 +110,14 @@ void Editor::DrawTransform(Transform& transform)
         ImGui::Text("Scale");
         ImGui::TableNextRow();
         ImGui::TableSetColumnIndex(0);
-        ImGui::DragFloat("X", &transform._scale.x, 0.1f);
+        if(ImGui::DragFloat("X Scale", &transform._scale.x, 0.1f))
+            transform.setDirty();
         ImGui::TableSetColumnIndex(1);
-        ImGui::DragFloat("Y", &transform._scale.y, 0.1f);
+        if(ImGui::DragFloat("Y Scale", &transform._scale.y, 0.1f))
+            transform.setDirty();
         ImGui::TableSetColumnIndex(2);
-        ImGui::DragFloat("Z", &transform._scale.z, 0.1f);
+        if(ImGui::DragFloat("Z Scale", &transform._scale.z, 0.1f))
+            transform.setDirty();
 
         ImGui::EndTable();
     }
