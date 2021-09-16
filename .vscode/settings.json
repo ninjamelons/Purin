@@ -70,7 +70,10 @@
         "typeindex": "cpp",
         "csignal": "cpp",
         "forward_list": "cpp",
-        "shared_mutex": "cpp"
+        "shared_mutex": "cpp",
+        "bitset": "cpp",
+        "future": "cpp",
+        "cfenv": "cpp"
     },
     "C_Cpp.errorSquiggles": "Enabled"
 }

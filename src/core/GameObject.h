@@ -13,20 +13,12 @@
 #include <algorithm>
 #include <stdexcept>
 
-class GameObject
+class GameObject : public std::enable_shared_from_this<GameObject>
 {
-private:
-    Transform _worldTransform;
-    bool _isDirty = true;
 public:
     std::string _name;
-    Transform _relativeTransform;
+    Transform _transform;
 public:
-    Transform getWorldTransform();
-    void setWorldTransform(const Transform& transform);
-
-    void setParent(std::shared_ptr<GameObject> parent);
-
     // Gameobject members
     std::vector<std::shared_ptr<Component>> _components;
     std::vector<std::shared_ptr<GameObject>> _children;
@@ -36,6 +28,19 @@ public:
     void addComponent(std::shared_ptr<Component> component);
     void removeComponent(std::string name);
     void removeAllComponents();
+    template<typename T>
+    std::shared_ptr<T> getComponent()
+    {
+        auto inContainer = std::find_if(_components.begin(), _components.end(),
+            [](std::shared_ptr<Component> const& i){ return typeid(*i) == typeid(T); });
+        
+        if(inContainer == _components.end())
+        {
+            throw std::invalid_argument("Component not found");
+        } else {
+            return std::static_pointer_cast<T>(*inContainer);
+        }
+    }
 
     // Child management
     void addChild(std::shared_ptr<GameObject> child);
@@ -45,7 +50,6 @@ public:
     // Constructors & Destructor
     GameObject();
     GameObject(std::string name);
-    GameObject(Transform relativeTransform);
     ~GameObject();
 };
 

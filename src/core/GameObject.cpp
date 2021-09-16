@@ -1,51 +1,5 @@
 #include "GameObject.h"
 
-Transform GameObject::getWorldTransform()
-{
-    /*
-    if(_isDirty)
-    {
-        _worldTransform = _parent->_worldTransform * _worldTransform;
-        _isDirty = false;
-    }
-    */
-    return _worldTransform;
-}
-
-void GameObject::setWorldTransform(const Transform& transform)
-{
-    _worldTransform = transform;
-    _isDirty = true;
-}
-
-// Child management
-void GameObject::addChild(std::shared_ptr<GameObject> child)
-{
-    auto inContainer = std::find_if(_children.begin(), _children.end(), 
-        [child](std::shared_ptr<GameObject> const& i){ return i.get() == child.get(); });
-    
-    if(inContainer == _children.end())
-    {
-        _children.push_back(child);
-    } else {
-        throw std::invalid_argument("Child already added");
-    }
-}
-void GameObject::removeChild(std::string name)
-{
-    auto inContainer = std::remove_if(_children.begin(), _children.end(), 
-        [name](std::shared_ptr<GameObject> const& i){ return i->_name == name; });
-    
-    if(inContainer == _children.end())
-    {
-        throw std::invalid_argument("Child not found");
-    }
-}
-void GameObject::removeAllChildren()
-{
-    _children.clear();
-}
-
 // Component management
 void GameObject::addComponent(std::shared_ptr<Component> component)
 {
@@ -74,8 +28,36 @@ void GameObject::removeAllComponents()
     _components.clear();
 }
 
+// Child management
+void GameObject::addChild(std::shared_ptr<GameObject> child)
+{
+    auto inContainer = std::find_if(_children.begin(), _children.end(), 
+        [child](std::shared_ptr<GameObject> const& i){ return i.get() == child.get(); });
+    
+    if(inContainer == _children.end())
+    {
+        _children.push_back(child);
+        child->_parent = this->shared_from_this();
+    } else {
+        throw std::invalid_argument("Child already added");
+    }
+}
+void GameObject::removeChild(std::string name)
+{
+    auto inContainer = std::remove_if(_children.begin(), _children.end(), 
+        [name](std::shared_ptr<GameObject> const& i){ return i->_name == name; });
+    
+    if(inContainer == _children.end())
+    {
+        throw std::invalid_argument("Child not found");
+    }
+}
+void GameObject::removeAllChildren()
+{
+    _children.clear();
+}
+
 // Constructors & Destructor
 GameObject::GameObject() : _parent(nullptr) {}
 GameObject::GameObject(std::string name) : _name(name) {}
-GameObject::GameObject(Transform relativeTransform) : _relativeTransform(relativeTransform) {}
 GameObject::~GameObject() {}

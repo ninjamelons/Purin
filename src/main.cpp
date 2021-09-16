@@ -152,12 +152,20 @@ int main() {
     // Create Scene
     Scene scene;
 
+    // Load backpack model
+    std::shared_ptr<Component> backpackModel = std::make_shared<Model>("./resources/models/backpack/backpack.obj");
+
     // Create first object
     std::shared_ptr<GameObject> backpack = std::make_shared<GameObject>("First object");
-    std::shared_ptr<Component> backpackModel = std::make_shared<Model>("./resources/models/backpack/backpack.obj");
     backpack->addComponent(backpackModel);
 
-    scene._root.addChild(backpack);
+
+    std::shared_ptr<GameObject> backpack2 = std::make_shared<GameObject>("Second backpack");
+    backpack2->_transform += Translation(glm::vec3(10.0f, 0.0f, 0.0f));
+    backpack2->addComponent(backpackModel);
+
+    scene._root->addChild(backpack);
+    scene._root->addChild(backpack2);
 
     /*
     // Create second object
@@ -220,8 +228,16 @@ int main() {
         shader.setMat4("view", view);
 
         // Render backpack model
+        for(auto& child : scene._root->_children)
+        {
+            shader.setMat4("model", child->_transform.worldTransform());
+            child->getComponent<Model>()->Draw(shader);
+        }
+
+        /*
         shader.setMat4("model", backpack->getWorldTransform()._worldTransform);
         std::static_pointer_cast<Model>(backpackModel)->Draw(shader);
+        */
 
         editor.DrawEditor([&]() {
             ImGui::SetCurrentContext(editor.getImguiContext());
@@ -235,7 +251,7 @@ int main() {
             ImGuiTreeNodeFlags node_flags = base_flags;
             if (ImGui::TreeNodeEx("Scene", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                for (auto& child : scene._root._children)
+                for (auto& child : scene._root->_children)
                 {                    
                     editor.DrawSceneNode(child, node_flags);
                 }
@@ -248,7 +264,7 @@ int main() {
                 ImGui::SetNextWindowSize(ImVec2(150, 200), ImGuiCond_FirstUseEver);
                 ImGui::Begin("Transform");
                 ImGui::Text(editor.getSelectedSceneNode()->_name.c_str());
-                editor.DrawTransform(editor.getSelectedSceneNode()->_relativeTransform);
+                editor.DrawTransform(editor.getSelectedSceneNode()->_transform);
                 ImGui::End();
             }
         });

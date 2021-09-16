@@ -1,9 +1,33 @@
 #include "Transform.h"
 
+glm::mat4 Transform::worldTransform() {
+    if(_isDirty) {
+        _localTransform = glm::mat4(1.0f);
+        _localTransform = glm::translate(_worldTransform, _translation.toVec3());
+        _localTransform *= glm::mat4_cast(_orientation);
+        _localTransform = glm::scale(_worldTransform, _scale);
+
+        _worldTransform = _localTransform; // Temporary - Need to multiply by parent transform
+        _isDirty = false;
+    }
+    return _worldTransform;
+}
+
+glm::mat4 Transform::localTransform() {
+    if(_isDirty) {
+        _localTransform = glm::mat4(1.0f);
+        _localTransform = glm::translate(_localTransform, _translation.toVec3());
+        _localTransform *= glm::mat4_cast(_orientation);
+        _localTransform = glm::scale(_localTransform, _scale);
+        _isDirty = false;
+    }
+    return _localTransform;
+}
+
 Transform Transform::operator*(const Transform& t2)
 {
     Transform t1(*this);
-    glm::mat4 translate = glm::translate(glm::mat4(1.0), _translation);
+    glm::mat4 translate = glm::translate(glm::mat4(1.0), _translation.toVec3());
     glm::mat4 rotate = glm::mat4_cast(_orientation);
     glm::mat4 scale = glm::scale(glm::mat4(1.0), _scale);
 
@@ -12,6 +36,13 @@ Transform Transform::operator*(const Transform& t2)
     t1._worldTransform = _localTransform * t2._worldTransform;
 
     return t1;
+}
+
+Transform Transform::operator+=(const Translation& trans)
+{
+    _translation += trans;
+    _isDirty = true;
+    return *this;
 }
 
 Transform::Transform() :
