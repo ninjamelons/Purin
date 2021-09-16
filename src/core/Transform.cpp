@@ -4,7 +4,7 @@ glm::mat4 Transform::worldTransform() {
     auto local = localTransform();
 
     if(_isDirty) {
-        _worldTransform = local; // Temporary - Need to multiply by parent transform
+        _worldTransform = local; // TODO - Temporary - Need to multiply by parent transform
         _isDirty = false;
     }
     return _worldTransform;
@@ -19,6 +19,15 @@ glm::mat4 Transform::localTransform() {
         _isDirtyLocal = false;
     }
     return _localTransform;
+}
+
+void Transform::setDirty() {
+    _isDirty = true;
+    _isDirtyLocal = true;
+}
+
+void Transform::setDirtyLocal() {
+    _isDirtyLocal = true;
 }
 
 Transform Transform::operator*(const Transform& t2)

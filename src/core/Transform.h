@@ -37,6 +37,8 @@ private:
     bool _isDirtyLocal = true;
 public:
     glm::mat4 worldTransform();
+    void setDirty();
+    void setDirtyLocal();
 
     glm::vec3 _scale = glm::vec3(1.0f);
     glm::quat _orientation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
