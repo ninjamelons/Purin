@@ -12,6 +12,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 include_directories(
   /usr/include/
   /usr/include/bullet/
+  ${CMAKE_SOURCE_DIR}/include/
   ${CMAKE_SOURCE_DIR}/src/utils/
   ${CMAKE_SOURCE_DIR}/src/core/
 )
